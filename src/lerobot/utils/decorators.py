@@ -14,21 +14,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from collections.abc import Callable
 from functools import wraps
+from typing import Any, cast
 
 from .errors import DeviceAlreadyConnectedError, DeviceNotConnectedError
 
 
-def check_if_not_connected(func):
+def check_if_not_connected[FunctionT: Callable[..., Any]](func: FunctionT) -> FunctionT:
     @wraps(func)
-    def wrapper(self, *args, **kwargs):
+    def wrapper(self: Any, *args: Any, **kwargs: Any) -> Any:
         if not self.is_connected:
             raise DeviceNotConnectedError(
                 f"{self.__class__.__name__} is not connected. Run `.connect()` first."
             )
         return func(self, *args, **kwargs)
 
-    return wrapper
+    return cast(FunctionT, wrapper)
 
 
 def check_if_already_connected(func):
